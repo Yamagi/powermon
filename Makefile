@@ -1,5 +1,5 @@
 PROG=	raplctl
-SRCS=	src/main.c
+SRCS=	src/main.c src/msr.c
 MAN=
 
 WARNS?=	2

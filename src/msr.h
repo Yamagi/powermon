@@ -224,6 +224,13 @@ typedef struct unit_msr_t {
 // Replacement for pow() with a base of 2.
 #define B2POW(e) (((e) == 0) ? 1 : (2 << ((e) - 1)))
 
+/*
+ * Reads the given MSR and returns it's data.
+ *
+ *  - msr: MSR to read.
+ */
+uint64_t read_msr(int32_t msr);
+
 
 // --------
 

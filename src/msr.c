@@ -24,36 +24,30 @@
  * SUCH DAMAGE.
  */ 
 
-#ifndef MAIN_H_
-#define MAIN_H_
+#include <stdint.h>
+#include <sys/cpuctl.h>
+#include <sys/errno.h>
+#include <sys/ioctl.h>
+
+#include "main.h"
+#include "msr.h"
 
 
 // --------
 
 
-// Options given at command line.
-typedef struct cmdopts_t {
-	const char *device;
-	int fd;
-} cmdopts_t;
+uint64_t read_msr(int32_t msr) {
+	cpuctl_msr_args_t args;
 
-extern cmdopts_t cmdopts;
+	args.msr = msr;
 
+	if (ioctl(cmdopts.fd, CPUCTL_RDMSR, &args) == -1)
+	{
+		exit_error(1, "ERROR: ioctl CPUCTL_RDMSR failed: %s\n", errno);
+	}
 
-// --------
-
-
-/*
- * Prints a message to stderr and exits with error code.
- *
- *  - code: Exit code.
- *  - fmt: Format of message.
- *  - ...: Message list.
- */
-void exit_error(int32_t code, const char *fmt, ...);
-
+	return args.data;
+}
 
 // --------
-
-#endif // MAIN_H_
 
