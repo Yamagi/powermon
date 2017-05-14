@@ -24,10 +24,14 @@
  * SUCH DAMAGE.
  */ 
 
+#include <fcntl.h>
+#include <stdarg.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <sys/errno.h>
 #include <sys/stat.h>
 
 #include "main.h"
@@ -44,13 +48,26 @@ cmdopts_t cmdopts;
 
 
 /*
+ * Cleans up at program exit.
+ */
+void cleanup(void) {
+	close(cmdopts.fd);
+}
+
+
+/*
  * Prints a message to stderr and exits with error code.
  *
- *  - msg: Message to print.
- *  - code: Exit code,
+ *  - code: Exit code.
+ *  - fmt: Format of message.
+ *  - ...: Message list.
  */
-void exit_error(const char *msg, int32_t code) {
-	fprintf(stderr, "ERROR: %s\n", msg);
+void exit_error(int32_t code, const char *fmt, ...) {
+	va_list vl;
+
+	va_start(vl, fmt);
+	vfprintf(stderr, fmt, vl);
+
 	exit(code);
 }
 
@@ -92,6 +109,11 @@ void parse_cmdoption(int argc, char *argv[]) {
 
 	if (!cmdopts.device) {
 		cmdopts.device = "/dev/cpuctl0";
+
+		if ((cmdopts.fd = open(cmdopts.device, O_RDWR)) == -1) {
+			exit_error(1, "ERROR: Couldn't open %s: %s\n", 
+					cmdopts.device, strerror(errno));
+		}
 	}
 }
 
@@ -103,11 +125,15 @@ void parse_cmdoption(int argc, char *argv[]) {
  * TODO: Program description.
  */
 int main(int argc, char *argv[]) {
+	// Register handlers
+	atexit(cleanup);
+
+
 	// If cpuctl(4) isn't loaded there's nothing we could do.
 	struct stat sb;
 
 	if (stat("/dev/cpuctl0", &sb) != 0) {
-		exit_error("cpuctl(4) isn't available. Sorry.", 1);
+		exit_error(1, "%s\n", "ERROR: cpuctl(4) isn't available. Sorry.");
 	}
 
 

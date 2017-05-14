@@ -27,6 +27,7 @@
 // Options given at command line.
 typedef struct cmdopts_t {
 	const char *device;
+	int fd;
 } cmdopts_t;
 
 extern cmdopts_t cmdopts;
