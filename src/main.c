@@ -24,13 +24,42 @@
  * SUCH DAMAGE.
  */ 
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
 #include "msr.h"
 
 
 // --------
 
 
+/*
+ * Prints a message to stderr and exits with error code.
+ *
+ *  - msg: Message to print.
+ *  - code: Exit code,
+ */
+void exit_error(const char *msg, int32_t code) {
+	fprintf(stderr, "ERROR: %s\n", msg);
+	exit(code);
+}
+
+
+// --------
+
+
+/*
+ * TODO: Program description.
+ */
 int main(int argc, char *argv[]) {
+	// If cpuctl(4) isn't loaded there's nothing we could do,
+	struct stat sb;
+
+	if (stat("/dev/cpuctl0", &sb) != 0) {
+		exit_error("cpuctl(4) isn't available. Sorry.", 1);
+	}
 
 	return 0;
 }
