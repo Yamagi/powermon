@@ -24,98 +24,13 @@
  * SUCH DAMAGE.
  */ 
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
-#include "main.h"
-#include "msr.h"
-
-
-// --------
-
-
 // Options given at command line.
-cmdopts_t cmdopts;
+typedef struct cmdopts_t {
+	const char *device;
+} cmdopts_t;
 
-// --------
-
-
-/*
- * Prints a message to stderr and exits with error code.
- *
- *  - msg: Message to print.
- *  - code: Exit code,
- */
-void exit_error(const char *msg, int32_t code) {
-	fprintf(stderr, "ERROR: %s\n", msg);
-	exit(code);
-}
-
-
-/*
- * Print usage and exit.
- */
-void usage(void) {
-	printf("Usage: raplctl [-d /dev/cpuctl0]\n\n");
-
-	printf("Options:\n");
-	printf(" -d: cpuctl(4) device to operate on\n");
-
-	exit(1);
-}
-
-
-/*
- * Parses the command line options and sets defaults.
- */
-void parse_cmdoption(int argc, char *argv[]) {
-	int32_t ch;
-
-	while ((ch = getopt(argc, argv, "d:h")) != -1) {
-		switch (ch) {
-			case 'd':
-				cmdopts.device = optarg;
-				break;
-
-			case '?':
-			case 'h':
-			default:
-				usage();
-		}
-	}
-
-	argc -= optind;
-	argv += optind;
-
-	if (!cmdopts.device) {
-		cmdopts.device = "/dev/cpuctl0";
-	}
-}
+extern cmdopts_t cmdopts;
 
 
 // --------
-
-
-/*
- * TODO: Program description.
- */
-int main(int argc, char *argv[]) {
-	// If cpuctl(4) isn't loaded there's nothing we could do.
-	struct stat sb;
-
-	if (stat("/dev/cpuctl0", &sb) != 0) {
-		exit_error("cpuctl(4) isn't available. Sorry.", 1);
-	}
-
-
-	// Parse options.
-	parse_cmdoption(argc, argv);
-
-
-	// Regular exit
-	return 0;
-}
 
