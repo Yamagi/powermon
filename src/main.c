@@ -164,6 +164,10 @@ static void checkcpu(void) {
 	if (cmdopts.cputype == UNKNOWN) {
 		exit_error(1, "%s\n", "CPU type is unknown, specify with -t.");
 	}
+
+	if (cmdopts.cputype == UNSUPPORTED) {
+		exit_error(1, "%s\n", "CPU is unsupported");
+	}
 }
 
 
