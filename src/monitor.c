@@ -275,7 +275,10 @@ void monitor(void) {
 			   and at the right we end at character 76. */
 
 
-			// Header
+			// Avoid artifacts.
+			clear();
+
+			// Header.
 			snprintf(header, sizeof(header), "%s", cmdopts.cpumodel);
 			mvprintw(0, 38 - (strlen(header) / 2), header);
 
@@ -293,11 +296,6 @@ void monitor(void) {
 			}
 
 			mvprintw(5, i + 10, ">");
-
-			for (i++; i <= 66; i++) {
-				mvprintw(5, i + 10, " ");
-			}
-
 			mvprintw(5, 77, "]");
 
 			// Package power consumption.
