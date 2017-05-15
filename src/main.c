@@ -36,6 +36,7 @@
 
 #include "cpuid.h"
 #include "main.h"
+#include "monitor.h"
 #include "msr.h"
 
 
@@ -191,6 +192,9 @@ int main(int argc, char *argv[]) {
 
 	// Check if CPU is supported.
 	checkcpu();
+
+
+	monitor();
 
 
 	/*
