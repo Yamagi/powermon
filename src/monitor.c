@@ -195,8 +195,8 @@ void monitor(void) {
 	// Counters.
 	energy_t cur_energy;
 	energy_t last_energy;
-	energy_t total_energy = {0};
-	energy_t delta_energy = {0};
+	energy_t total_energy = {0, 0, 0, 0};
+	energy_t delta_energy = {0, 0, 0, 0};
 	uint32_t count = 0;
 
 	getenergy(&multipliers, &last_energy);
@@ -333,7 +333,7 @@ void monitor(void) {
 			refresh();
 
 			// Quit?
-			uint32_t ch;
+			int32_t ch;
 
 			while ((ch = getch()) != ERR) {
 				switch (ch) {

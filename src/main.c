@@ -79,7 +79,7 @@ void exit_error(int32_t code, const char *fmt, ...) {
  * Breaks the main loop when a signal is caught.
  */
 void sighandler(int sig) {
-	options.stop = 1;
+	options.stop = sig;
 }
 
 

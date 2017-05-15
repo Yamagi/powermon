@@ -46,7 +46,7 @@ typedef struct options_t {
 	const char *device;
 
 	// FD to cpuctl device.
-	uint32_t fd;
+	int32_t fd;
 
 	// CPU family string.
 	const char *cpufamily;
