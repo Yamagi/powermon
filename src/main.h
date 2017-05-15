@@ -41,7 +41,7 @@ typedef enum cputype_e {
 
 
 // Options given at command line.
-typedef struct cmdopts_t {
+typedef struct options_t {
 	// cpuctl device to operate on.
 	const char *device;
 
@@ -59,9 +59,12 @@ typedef struct cmdopts_t {
 
 	// CPU model
 	char cpumodel[49];
-} cmdopts_t;
 
-extern cmdopts_t cmdopts;
+	// If set the mainloop is broken.
+	int stop;
+} options_t;
+
+extern options_t options;
 
 
 // --------

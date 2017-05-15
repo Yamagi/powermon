@@ -44,7 +44,7 @@
 
 
 // Options given at command line.
-cmdopts_t cmdopts;
+options_t options;
 
 // --------
 
@@ -53,7 +53,7 @@ cmdopts_t cmdopts;
  * Cleans up at program exit.
  */
 void cleanup(void) {
-	close(cmdopts.fd);
+	close(options.fd);
 }
 
 
@@ -81,10 +81,14 @@ void exit_error(int32_t code, const char *fmt, ...) {
  * Print usage and exit.
  */
 static void usage(void) {
-	printf("Usage: raplctl [-d /dev/cpuctl0]\n\n");
+	printf("Usage: raplctl [-d device] [-f family] [-m model] [-t type] [-v vendor]\n\n");
 
 	printf("Options:\n");
-	printf(" -d: cpuctl(4) device to operate on\n");
+	printf(" -d: cpuctl(4) device.\n");
+	printf(" -f: CPU family.\n");
+	printf(" -m: CPU model.\n");
+	printf(" -t: CPU type.\n");
+	printf(" -v: CPU vendor.\n");
 
 	exit(1);
 }
@@ -99,29 +103,29 @@ static void parse_cmdoption(int argc, char *argv[]) {
 	while ((ch = getopt(argc, argv, "d:f:hm:t:v:")) != -1) {
 		switch (ch) {
 			case 'd':
-				cmdopts.device = optarg;
+				options.device = optarg;
 				break;
 
 			case 'f':
-				cmdopts.cpufamily = optarg;
+				options.cpufamily = optarg;
 				break;
 
 			case 'm':
-				strlcpy(cmdopts.cpumodel, optarg, sizeof(cmdopts.cpumodel));
+				strlcpy(options.cpumodel, optarg, sizeof(options.cpumodel));
 				break;
 
 			case 't':
 				if (!strcmp(optarg, "client")) {
-					cmdopts.cputype = CLIENT;
+					options.cputype = CLIENT;
 				} else if (!strcmp(optarg, "server")) {
-					cmdopts.cputype = SERVER;
+					options.cputype = SERVER;
 				} else {
-					cmdopts.cputype = UNKNOWN;
+					options.cputype = UNKNOWN;
 				}
 				break;
 
 			case 'v':
-				strlcpy(cmdopts.cpuvendor, optarg, sizeof(cmdopts.cpuvendor));
+				strlcpy(options.cpuvendor, optarg, sizeof(options.cpuvendor));
 				break;
 
 			case '?':
@@ -134,29 +138,29 @@ static void parse_cmdoption(int argc, char *argv[]) {
 	argc -= optind;
 	argv += optind;
 
-	if (!cmdopts.device) {
-		cmdopts.device = "/dev/cpuctl0";
+	if (!options.device) {
+		options.device = "/dev/cpuctl0";
 
-		if ((cmdopts.fd = open(cmdopts.device, O_RDWR)) == -1) {
+		if ((options.fd = open(options.device, O_RDWR)) == -1) {
 			exit_error(1, "ERROR: Couldn't open %s: %s\n", 
-					cmdopts.device, strerror(errno));
+					options.device, strerror(errno));
 		}
 	}
 
-	if (!cmdopts.cpufamily) {
-		cmdopts.cpufamily = getcpufamily();
+	if (!options.cpufamily) {
+		options.cpufamily = getcpufamily();
 	}
 
-	if (!cmdopts.cputype) {
-		cmdopts.cputype = getcputype();
+	if (!options.cputype) {
+		options.cputype = getcputype();
 	}
 
-	if (!strlen(cmdopts.cpuvendor)) {
-		getcpuvendor(cmdopts.cpuvendor);
+	if (!strlen(options.cpuvendor)) {
+		getcpuvendor(options.cpuvendor);
 	}
 
-	if (!strlen(cmdopts.cpumodel)) {
-		getcpumodel(cmdopts.cpumodel);
+	if (!strlen(options.cpumodel)) {
+		getcpumodel(options.cpumodel);
 	}
 }
 
@@ -166,15 +170,15 @@ static void parse_cmdoption(int argc, char *argv[]) {
  * printed and the program is aborted.
  */
 static void checkcpu(void) {
-	if (strcmp(cmdopts.cpuvendor, "GenuineIntel")) {
+	if (strcmp(options.cpuvendor, "GenuineIntel")) {
 		exit_error(1, "%s\n", "Only Intel CPUs are supported, sorry.");
 	}
 
-	if (cmdopts.cputype == UNKNOWN) {
+	if (options.cputype == UNKNOWN) {
 		exit_error(1, "%s\n", "CPU type is unknown, specify with -t.");
 	}
 
-	if (cmdopts.cputype == UNSUPPORTED) {
+	if (options.cputype == UNSUPPORTED) {
 		exit_error(1, "%s\n", "CPU is unsupported");
 	}
 }
@@ -187,7 +191,7 @@ static void checkcpu(void) {
  * TODO: Program description.
  */
 int main(int argc, char *argv[]) {
-	// Register handlers
+	// Register handlers.
 	atexit(cleanup);
 
 
@@ -207,17 +211,11 @@ int main(int argc, char *argv[]) {
 	checkcpu();
 
 
+	// Setup curses an start the main loop.
 	monitor();
 
 
-	/*
-	uint64_t blabb = read_msr(UNIT_MULTIPLIER);
-	unit_msr_t blubb = *(unit_msr_t *)&blabb;
-	printf("%lu\n", blubb.power);
-	*/
-
-
-	// Regular exit
+	// Regular exit.
 	return 0;
 }
 

@@ -44,16 +44,21 @@
  *  - model: Pointer to a char array with minimum length 49.
  */
 void getcpumodel(char *model) {
-	char *tmp;
 	cpuctl_cpuid_count_args_t cpuid;
-	uint32_t count;
+
+
+	/* The CPU model is an up to 48 byte long null-terminated string,
+	   stored at CPUID 0x80000002, 0x80000003, 0x80000004 in all 4
+	   registers. To query it the 3 blocks need to be combined into
+	   one string. This is only supported if a query of 0x80000000
+	   yields an EAX value of 0x80000004 or higher. */
 
 
 	// Check if supported.
 	cpuid.level = 0x80000000;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
@@ -62,11 +67,11 @@ void getcpumodel(char *model) {
 		return;
 	}
 
-	// Block 0
+	// Block 0.
 	cpuid.level = 0x80000002;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
@@ -76,11 +81,11 @@ void getcpumodel(char *model) {
 	memcpy(model + 12, cpuid.data + 3, sizeof(uint32_t));
 
 
-	// Block 1
+	// Block 1.
 	cpuid.level = 0x80000003;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
@@ -90,11 +95,11 @@ void getcpumodel(char *model) {
 	memcpy(model + 28, cpuid.data + 3, sizeof(uint32_t));
 
 
-	// Block 2
+	// Block 2.
 	cpuid.level = 0x80000004;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
@@ -103,9 +108,10 @@ void getcpumodel(char *model) {
 	memcpy(model + 40, cpuid.data + 2, sizeof(uint32_t));
 	memcpy(model + 44, cpuid.data + 3, sizeof(uint32_t));
 
-	// Remove superfluous whitespaces
-	count = 0;
-	tmp = model;
+	// Remove superfluous whitespaces. For example a Core i7-2620M
+	// returns a string surrounded by a lot if whitespaces.
+	uint32_t count = 0;
+	char *tmp = model;
 
 	while (*tmp != '\0') {
 		if (!isspace(*tmp)) {
@@ -129,7 +135,6 @@ void getcpumodel(char *model) {
 		*tmp = '\0';
 		tmp--;
 	}
-
 }
 
 /*
@@ -140,14 +145,19 @@ void getcpumodel(char *model) {
 void getcpuvendor(char *vendor) {
 	cpuctl_cpuid_count_args_t cpuid;
 
+
+	/* The CPU vendor is the first CPUID field. :) The string is
+	   stored in EBX, EDX and ECX. In that order. */
+
+
 	cpuid.level = 0x0;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
-	// Yes, this is ugly.
+	// Yes, this is ugly. :)
 	memcpy(vendor, cpuid.data + 1, sizeof(uint32_t));
 	memcpy(vendor + 4, cpuid.data + 3, sizeof(uint32_t));
 	memcpy(vendor + 8, cpuid.data + 2, sizeof(uint32_t));
@@ -164,57 +174,57 @@ const char *getcpufamily(void) {
 	cpuid.level = 0x1;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
 	// CPU identifiers are taken from  Intel® 64 and IA-32
-    // Architectures Software Developer Manual: Vol 3, Table 35-1
+    // Architectures Software Developer Manual: Vol 3, Table 35-1.
 	switch (cpuid.data[0] & 0xfffffff0) {
-		// Silvermont
+		// Silvermont.
 		case 0x506d0:
 			return "Silvermont";
 
-		// Airmont
+		// Airmont.
 		case 0x406c0:
 			return "Airmont";
 
-		// Goldmont
+		// Goldmont.
 		case 0x506c0:
 		case 0x506f0:
 			return "Goldmont";
 
-		// Sandy Bridge
+		// Sandy Bridge.
 		case 0x206a0:
 		case 0x206d0:
 			return "Sandy Bridge";
 
-		// Ivy Bridge
+		// Ivy Bridge.
 		case 0x306a0:
 		case 0x306e0:
 			return "Ivy Bridge";
 
-		// Haswell
+		// Haswell.
 		case 0x40660:
 		case 0x40650:
 		case 0x306c0:
 		case 0x306f0:
 			return "Haswell";
 
-		// Broadwell
+		// Broadwell.
 		case 0x306d0:
 		case 0x40670:
 		case 0x406f0:
 		case 0x50660:
 			return "Broadwell";
 
-		// Skylake
+		// Skylake.
 		case 0x406e0:
 		case 0x506e0:
 		case 0x50650:
 			return "Skylake";
 
-		// Kaby Lake
+		// Kaby Lake.
 		case 0x806e0:
 		case 0x60600:
 			return "Kaby Lake";
@@ -235,20 +245,20 @@ cputype_e getcputype(void) {
 	cpuid.level = 0x1;
 	cpuid.level_type = 0;
 
-	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+	if (ioctl(options.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
 		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
 	}
 
 	// CPU identifiers are taken from  Intel® 64 and IA-32
-    // Architectures Software Developer Manual: Vol 3, Table 35-1
+    // Architectures Software Developer Manual: Vol 3, Table 35-1.
 	switch (cpuid.data[0] & 0xfffffff0) {
-		// Pentium
+		// Pentium.
 		case 0x00510:
 		case 0x00520:
 		case 0x00540:
 			return UNSUPPORTED;
 
-		// P6
+		// P6 (P-Pro, P2, P3 and P-M).
 		case 0x00610:
 		case 0x00630:
 		case 0x00650:
@@ -260,7 +270,7 @@ cputype_e getcputype(void) {
 		case 0x006d0:
 			return UNSUPPORTED;
 
-		// Netburst
+		// Netburst.
 		case 0x00f00:
 		case 0x0f010:
 		case 0x00f20:
@@ -269,7 +279,7 @@ cputype_e getcputype(void) {
 		case 0x00f60:
 			return UNSUPPORTED;
 
-		// Atom
+		// Atom.
 		case 0x106c0:
 		case 0x20660:
 		case 0x20670:
@@ -281,26 +291,26 @@ cputype_e getcputype(void) {
 		case 0x506a0:
 			return UNSUPPORTED;
 
-		// Silvermont
+		// Silvermont.
 		case 0x506d0:
 			return CLIENT;
 
-		// Airmont
+		// Airmont.
 		case 0x406c0:
 			return CLIENT;
 
-		// Goldmont
+		// Goldmont.
 		case 0x506c0:
 		case 0x506f0:
 			return CLIENT;
 
-		// Core / Core2
+		// Core / Core2.
 		case 0x006f0:
 		case 0x10670:
 		case 0x106d0:
 			return UNSUPPORTED;
 
-		// Nehalem / Westmere
+		// Nehalem / Westmere.
 		case 0x106e0:
 		case 0x106f0:
 		case 0x20650:
@@ -309,57 +319,57 @@ cputype_e getcputype(void) {
 		case 0x206f0:
 			return UNSUPPORTED;
 
-		// Sandy Bridge client
+		// Sandy Bridge client.
 		case 0x206a0:
 			return CLIENT;
 
-		// Sandy Bridge server
+		// Sandy Bridge server.
 		case 0x206d0:
 			return SERVER;
 
-		// Ivy Bridge client
+		// Ivy Bridge client.
 		case 0x306a0:
 			return CLIENT;
 
-		// Ivy Bridge server
+		// Ivy Bridge server.
 		case 0x306e0:
 			return SERVER;
 
-		// Haswell client
+		// Haswell client.
 		case 0x40660:
 		case 0x40650:
 		case 0x306c0:
 			return CLIENT;
 
-		// Haswell server
+		// Haswell server.
 		case 0x306f0:
 			return SERVER;
 
-		// Broadwell client
+		// Broadwell client.
 		case 0x306d0:
 		case 0x40670:
 			return CLIENT;
 
-		// Broadwell server
+		// Broadwell server.
 		case 0x406f0:
 		case 0x50660:
 			return SERVER;
 
-		// Skylake client
+		// Skylake client.
 		case 0x406e0:
 		case 0x506e0:
 			return CLIENT;
 
-		// Skylake server
+		// Skylake server.
 		case 0x50650:
 			return SERVER;
 
-		// Kaby Lake
+		// Kaby Lake.
 		case 0x806e0:
 		case 0x60600:
 			return CLIENT;
 
-		// Unknown
+		// Unknown.
 		default:
 			return UNKNOWN;
 	}

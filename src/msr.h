@@ -139,7 +139,7 @@
 // Time DRAM bandwidth was throttled to enforce the power limit.
 #define DRAM_THROTTLE 0x61b
 
-// Informations about min and max power limit
+// Informations about min and max power limit.
 #define DRAM_INFO     0x61c
 
 
@@ -235,3 +235,4 @@ uint64_t read_msr(int32_t msr);
 // --------
 
 #endif // MSR_H_
+

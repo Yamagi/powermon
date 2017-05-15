@@ -37,12 +37,17 @@
 // --------
 
 
+/*
+ * Reads the given MSR and returns it's data.
+ *
+ *  - msr: MSR to read.
+ */
 uint64_t read_msr(int32_t msr) {
 	cpuctl_msr_args_t args;
 
 	args.msr = msr;
 
-	if (ioctl(cmdopts.fd, CPUCTL_RDMSR, &args) == -1)
+	if (ioctl(options.fd, CPUCTL_RDMSR, &args) == -1)
 	{
 		exit_error(1, "ERROR: ioctl CPUCTL_RDMSR failed: %s\n", errno);
 	}
