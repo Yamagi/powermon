@@ -24,6 +24,7 @@
  * SUCH DAMAGE.
  */ 
 
+#include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +44,9 @@
  *  - model: Pointer to a char array with minimum length 49.
  */
 void getcpumodel(char *model) {
+	char *tmp;
 	cpuctl_cpuid_count_args_t cpuid;
+	uint32_t count;
 
 
 	// Check if supported.
@@ -99,6 +102,33 @@ void getcpumodel(char *model) {
 	memcpy(model + 36, cpuid.data + 1, sizeof(uint32_t));
 	memcpy(model + 40, cpuid.data + 2, sizeof(uint32_t));
 	memcpy(model + 44, cpuid.data + 3, sizeof(uint32_t));
+
+	// Remove superfluous whitespaces
+	count = 0;
+	tmp = model;
+
+	while (*tmp != '\0') {
+		if (!isspace(*tmp)) {
+			break;
+		}
+		 count++;
+		 tmp++;
+	}
+
+	if (count < strlen(model)) {
+		memmove(model, model + count, 49 - count);
+	}
+
+	tmp = model + strlen(model);
+
+	while (tmp != model) {
+		if (!isspace(*tmp)) {
+			break;
+		}
+
+		*tmp = '\0';
+		tmp--;
+	}
 
 }
 
