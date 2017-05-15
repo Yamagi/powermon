@@ -90,7 +90,7 @@ void sighandler(int sig) {
  * Print usage and exit.
  */
 static void usage(void) {
-	printf("Usage: raplctl [-d device] [-f family] [-m model] [-t type] [-v vendor]\n\n");
+	printf("Usage: powermon [-d device] [-f family] [-m model] [-t type] [-v vendor]\n\n");
 
 	printf("Options:\n");
 	printf(" -d: cpuctl(4) device.\n");
@@ -197,7 +197,18 @@ static void checkcpu(void) {
 
 
 /*
- * TODO: Program description.
+ * powermon is a top-like tool to show realtime power statistics.
+ * The data is retrieved from the RAPL interface, exposed through
+ * MSR. Only Intel CPUs starting with Sandy Bridge support the
+ * interface, other models and vendors are not supported. Client
+ * aka desktop CPUs expose the GPU power consumption, server CPUs
+ * and it's derivates (for example Socket 2011 desktop models)
+ * the DRAM power consumtion instead.
+ *
+ * All the user needs to do is to start the program with 'powermon'.
+ * The command line options are only necessary if the tools in not
+ * able determine parameters automaticaly, maybe because the CPU
+ * is unknown to it.
  */
 int main(int argc, char *argv[]) {
 	// Register handlers.
