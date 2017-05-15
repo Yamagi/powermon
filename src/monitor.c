@@ -59,10 +59,11 @@ typedef struct multipliers_t {
 /*
  * Powerlimits of the package.
  */
-typedef struct packagelimits_t {
-	uint64_t limit1;
-	uint64_t limit2;
-} packagelimits_t;
+typedef struct powerlimits_t {
+	uint64_t maximum_power;
+	uint64_t minimum_power;
+	uint64_t thermal_spec_power;
+} powerlimits_t;
 
 /*
  * Maximum value of *_STATUS und *_THROTTLE MSR.
@@ -137,19 +138,20 @@ static void getmultipliers(multipliers_t *multipliers) {
 
 
 /*
- * Fills the given packagelimits_t structs.
+ * Fills the given powerlimits_t structs.
  * 
  *  - *limits: Struct to fill.
  */
-static void getpackagelimits(packagelimits_t *limits) {
+static void getpowerlimits(powerlimits_t *limits) {
 	uint64_t msr;
-	pkg_limit_msr_t values;
+	info_msr_t values;
 
 	msr = read_msr(PKG_INFO);
-	values = *(pkg_limit_msr_t *)&msr;
+	values = *(info_msr_t *)&msr;
 
-	limits->limit1 = values.power_limit_1 / 10;
-	limits->limit2 = values.power_limit_2 / 10;
+	limits->maximum_power = values.maximum_power / 10;
+	limits->minimum_power = values.minimum_power / 10;
+	limits->thermal_spec_power = values.thermal_spec_power / 10;
 }
 
 
@@ -187,8 +189,10 @@ void monitor(void) {
 
 
 	// Initiale package limits
-	packagelimits_t packagelimits;
-	getpackagelimits(&packagelimits);
+	powerlimits_t powerlimits;
+	getpowerlimits(&powerlimits);
+	uint64_t powerlimit = powerlimits.thermal_spec_power < powerlimits.maximum_power
+		? powerlimits.maximum_power : powerlimits.thermal_spec_power;
 
 
 	// Intialize wrap arounds
@@ -283,11 +287,11 @@ void monitor(void) {
 			mvprintw(0, 38 - (strlen(header) / 2), header);
 
 			snprintf(header, sizeof(header), "(Arch: %s, Limit: %luW)",
-					cmdopts.cpufamily, packagelimits.limit1);
+					cmdopts.cpufamily, powerlimit);
 			mvprintw(1, 38 - (strlen(header) / 2), header);
 
 			// Total power consumption.
-			num_load = floor((67.0 / packagelimits.limit1) * delta_energy.pkg);
+			num_load = floor((67.0 / powerlimit) * delta_energy.pkg);
 
 			mvprintw(5, 1, "%6.2fW [", delta_energy.pkg);
 
