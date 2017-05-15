@@ -96,7 +96,7 @@ static void usage(void) {
 static void parse_cmdoption(int argc, char *argv[]) {
 	int32_t ch;
 
-	while ((ch = getopt(argc, argv, "d:f:ht:")) != -1) {
+	while ((ch = getopt(argc, argv, "d:f:hm:t:v:")) != -1) {
 		switch (ch) {
 			case 'd':
 				cmdopts.device = optarg;
@@ -104,6 +104,10 @@ static void parse_cmdoption(int argc, char *argv[]) {
 
 			case 'f':
 				cmdopts.cpufamily = optarg;
+				break;
+
+			case 'm':
+				strlcpy(cmdopts.cpumodel, optarg, sizeof(cmdopts.cpumodel));
 				break;
 
 			case 't':
@@ -114,6 +118,10 @@ static void parse_cmdoption(int argc, char *argv[]) {
 				} else {
 					cmdopts.cputype = UNKNOWN;
 				}
+				break;
+
+			case 'v':
+				strlcpy(cmdopts.cpuvendor, optarg, sizeof(cmdopts.cpuvendor));
 				break;
 
 			case '?':
@@ -142,6 +150,14 @@ static void parse_cmdoption(int argc, char *argv[]) {
 	if (!cmdopts.cputype) {
 		cmdopts.cputype = getcputype();
 	}
+
+	if (!strlen(cmdopts.cpuvendor)) {
+		getcpuvendor(cmdopts.cpuvendor);
+	}
+
+	if (!strlen(cmdopts.cpumodel)) {
+		getcpumodel(cmdopts.cpumodel);
+	}
 }
 
 
@@ -150,17 +166,10 @@ static void parse_cmdoption(int argc, char *argv[]) {
  * printed and the program is aborted.
  */
 static void checkcpu(void) {
-	// CPU vendor must be Intel.
-	char vendor[13];
-
-	getcpuvendor(vendor);
-
-	if (strcmp(vendor, "GenuineIntel")) {
+	if (strcmp(cmdopts.cpuvendor, "GenuineIntel")) {
 		exit_error(1, "%s\n", "Only Intel CPUs are supported, sorry.");
 	}
 
-
-	// Is the CPU type supported?
 	if (cmdopts.cputype == UNKNOWN) {
 		exit_error(1, "%s\n", "CPU type is unknown, specify with -t.");
 	}

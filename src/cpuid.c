@@ -38,6 +38,71 @@
 
 
 /*
+ * Gives the CPU model.
+ *
+ *  - model: Pointer to a char array with minimum length 49.
+ */
+void getcpumodel(char *model) {
+	cpuctl_cpuid_count_args_t cpuid;
+
+
+	// Check if supported.
+	cpuid.level = 0x80000000;
+	cpuid.level_type = 0;
+
+	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
+	}
+
+	if (cpuid.data[0] < 0x80000004) {
+		strcpy(model, "Unknown CPU Model");
+		return;
+	}
+
+	// Block 0
+	cpuid.level = 0x80000002;
+	cpuid.level_type = 0;
+
+	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
+	}
+
+	memcpy(model, cpuid.data, sizeof(uint32_t));
+	memcpy(model + 4, cpuid.data + 1, sizeof(uint32_t));
+	memcpy(model + 8, cpuid.data + 2, sizeof(uint32_t));
+	memcpy(model + 12, cpuid.data + 3, sizeof(uint32_t));
+
+
+	// Block 1
+	cpuid.level = 0x80000003;
+	cpuid.level_type = 0;
+
+	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
+	}
+
+	memcpy(model + 16 , cpuid.data, sizeof(uint32_t));
+	memcpy(model + 20, cpuid.data + 1, sizeof(uint32_t));
+	memcpy(model + 24, cpuid.data + 2, sizeof(uint32_t));
+	memcpy(model + 28, cpuid.data + 3, sizeof(uint32_t));
+
+
+	// Block 2
+	cpuid.level = 0x80000004;
+	cpuid.level_type = 0;
+
+	if (ioctl(cmdopts.fd, CPUCTL_CPUID_COUNT, &cpuid) == -1) {
+		exit_error(1, "ERROR: ioctl CPUCTL_CPUID_COUNT failed: %s\n", errno);
+	}
+
+	memcpy(model + 32 , cpuid.data, sizeof(uint32_t));
+	memcpy(model + 36, cpuid.data + 1, sizeof(uint32_t));
+	memcpy(model + 40, cpuid.data + 2, sizeof(uint32_t));
+	memcpy(model + 44, cpuid.data + 3, sizeof(uint32_t));
+
+}
+
+/*
  * Gives the CPU vendor.
  *
  *  - vendor: Pointer to a char array with minimum length 13.

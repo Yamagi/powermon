@@ -24,8 +24,11 @@
  * SUCH DAMAGE.
  */ 
 
+#include <math.h>
+#include <ncurses.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "main.h"
@@ -52,6 +55,14 @@ typedef struct multipliers_t {
 	double power;
 	double time;
 } multipliers_t;
+
+/*
+ * Powerlimits of the package.
+ */
+typedef struct packagelimits_t {
+	uint64_t limit1;
+	uint64_t limit2;
+} packagelimits_t;
 
 /*
  * Maximum value of *_STATUS und *_THROTTLE MSR.
@@ -126,6 +137,23 @@ static void getmultipliers(multipliers_t *multipliers) {
 
 
 /*
+ * Fills the given packagelimits_t structs.
+ * 
+ *  - *limits: Struct to fill.
+ */
+static void getpackagelimits(packagelimits_t *limits) {
+	uint64_t msr;
+	pkg_limit_msr_t values;
+
+	msr = read_msr(PKG_INFO);
+	values = *(pkg_limit_msr_t *)&msr;
+
+	limits->limit1 = values.power_limit_1 / 10;
+	limits->limit2 = values.power_limit_2 / 10;
+}
+
+
+/*
  * Fills the given wraparound_t struct based upon the values
  * in the given multipliers_t.
  *
@@ -145,9 +173,22 @@ static void getwraparounds(multipliers_t *multi, wraparound_t *wrap) {
  * Prints a nice status monitor until the user interrupts us.
  */
 void monitor(void) {
+	// Initilize curses
+	initscr();
+	raw();
+	keypad(stdscr, TRUE);
+	noecho();
+	nodelay(stdscr, TRUE);
+	curs_set(0);
+
 	// Initialize multipliers
 	multipliers_t multipliers;
     getmultipliers(&multipliers);
+
+
+	// Initiale package limits
+	packagelimits_t packagelimits;
+	getpackagelimits(&packagelimits);
 
 
 	// Intialize wrap arounds
@@ -219,18 +260,104 @@ void monitor(void) {
 		count++;
 
 		if (count == 20) {
-			printf("Package   | Total: %fJ, Current: %fJ\n", 
-					total_energy.pkg, delta_energy.pkg);
-			printf("x86 Cores | Total: %fJ, Current: %fJ\n", 
-					total_energy.pp0, delta_energy.pp0);
-			printf("GPU       | Total: %fJ, Current: %fJ\n", 
-					total_energy.pp1, delta_energy.pp1);
-			printf("DRAM      | Total: %fJ, Current: %fJ\n", 
-					total_energy.ram, delta_energy.ram);
-			printf("Uncore    | Total: %fJ, Current: %fJ\n\n", 
-					total_energy.pkg - (total_energy.pp0 + total_energy.pp1),
-					delta_energy.pkg - (delta_energy.pp0 + delta_energy.pp1));
+			char header[78];
+			uint32_t i;
+			uint32_t ch;
+			uint32_t num_load;
+			uint32_t stop = 0;
 
+
+			/* The standard terminal is 79 characters wide. We omit one
+			   character at each end, the usable space is 77 characters.
+			   We loose 2 characters to the bars end markers, and 8 to
+			   the current power consumtion display. So we can work with
+			   67 characters. At the left we're starting at character 10
+			   and at the right we end at character 76. */
+
+
+			// Header
+			snprintf(header, sizeof(header), "%s", cmdopts.cpumodel);
+			mvprintw(0, 38 - (strlen(header) / 2), header);
+
+			snprintf(header, sizeof(header), "(Arch: %s, Limit: %luW)",
+					cmdopts.cpufamily, packagelimits.limit1);
+			mvprintw(1, 38 - (strlen(header) / 2), header);
+
+			// Total power consumption.
+			num_load = floor((67.0 / packagelimits.limit1) * delta_energy.pkg);
+
+			mvprintw(5, 1, "%6.2fW [", delta_energy.pkg);
+
+			for (i = 0; i < num_load && i <= 66; i++) {
+				mvprintw(5, i + 10, "=");
+			}
+
+			mvprintw(5, i + 10, ">");
+
+			for (i++; i <= 66; i++) {
+				mvprintw(5, i + 10, " ");
+			}
+
+			mvprintw(5, 77, "]");
+
+			// Package power consumption.
+			attron(A_BOLD);
+			mvprintw(9, 1, "Package:");
+			attroff(A_BOLD);
+			mvprintw(10, 1, "Current: %.2fJ", delta_energy.pkg);
+			mvprintw(11, 1, "Total: %.2fJ", total_energy.pkg);
+
+			// Uncore power consumption.
+			attron(A_BOLD);
+			mvprintw(9, 20, "Uncore:");
+			attroff(A_BOLD);
+			mvprintw(10, 20, "Current: %.2fJ", delta_energy.pkg - 
+					(delta_energy.pp0 + delta_energy.pp1));
+			mvprintw(11, 20, "Total: %.2fJ", total_energy.pkg -
+					(total_energy.pp0 + total_energy.pp1));
+
+			// x86 cores power consumption.
+			attron(A_BOLD);
+			mvprintw(9, 40, "x86 Cores:");
+			attroff(A_BOLD);
+			mvprintw(10, 40, "Current: %.2fJ", delta_energy.pp0);
+			mvprintw(11, 40, "Total: %.2fJ", total_energy.pp0);
+
+			if (cmdopts.cputype == CLIENT) {
+				// GPU power consumption.
+				attron(A_BOLD);
+				mvprintw(9, 60, "GPU:");
+				attroff(A_BOLD);
+				mvprintw(10, 60, "Current: %.2fJ", delta_energy.pp1);
+				mvprintw(11, 60, "Total: %.2fJ", total_energy.pp1);
+			} else if (cmdopts.cputype == SERVER) {
+				// DRAM power consumption.
+				attron(A_BOLD);
+				mvprintw(9, 60, "DRAM:");
+				attroff(A_BOLD);
+				mvprintw(10, 60, "Current: %.2fJ", delta_energy.ram);
+				mvprintw(11, 60, "Total: %.2fJ", total_energy.ram);
+			}
+
+			// Print the new data
+			refresh();
+
+
+			// Quit?
+			if ((ch = getch()) != ERR) {
+				switch (ch) {
+					case 'q':
+					case 'Q':
+					case 27:
+						stop = 1;
+				}
+			}
+
+			if (stop) {
+				break;
+			}
+
+			// Cleanup
 			delta_energy.pkg = 0;
 			delta_energy.pp0 = 0;
 			delta_energy.pp1 = 0;
@@ -241,6 +368,9 @@ void monitor(void) {
 		// One sample every 50 milliseconds.
 		usleep(50 * 1000);
 	}
+
+	// Quit curses
+	endwin();
 }
 
 

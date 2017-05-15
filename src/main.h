@@ -53,6 +53,12 @@ typedef struct cmdopts_t {
 
 	// CPU type.
 	cputype_e cputype;
+
+	// CPU vendor
+	char cpuvendor[13];
+
+	// CPU model
+	char cpumodel[49];
 } cmdopts_t;
 
 extern cmdopts_t cmdopts;
