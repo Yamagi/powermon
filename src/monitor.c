@@ -169,7 +169,7 @@ static void getwraparounds(multipliers_t *multi, wraparound_t *wrap) {
 void monitor(void) {
 	// Initialize curses.
 	initscr();
-	raw();
+	cbreak();
 	keypad(stdscr, TRUE);
 	noecho();
 	nodelay(stdscr, TRUE);
@@ -335,7 +335,7 @@ void monitor(void) {
 			// Quit?
 			uint32_t ch;
 
-			if ((ch = getch()) != ERR) {
+			while ((ch = getch()) != ERR) {
 				switch (ch) {
 					case 'q':
 					case 'Q':

@@ -25,6 +25,7 @@
  */ 
 
 #include <fcntl.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -71,6 +72,14 @@ void exit_error(int32_t code, const char *fmt, ...) {
 	vfprintf(stderr, fmt, vl);
 
 	exit(code);
+}
+
+
+/*
+ * Breaks the main loop when a signal is caught.
+ */
+void sighandler(int sig) {
+	options.stop = 1;
 }
 
 
@@ -193,6 +202,8 @@ static void checkcpu(void) {
 int main(int argc, char *argv[]) {
 	// Register handlers.
 	atexit(cleanup);
+	signal(SIGINT, sighandler);
+	signal(SIGTERM, sighandler);
 
 
 	// If cpuctl(4) isn't loaded there's nothing we could do.

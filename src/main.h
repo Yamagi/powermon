@@ -46,7 +46,7 @@ typedef struct options_t {
 	const char *device;
 
 	// FD to cpuctl device.
-	int fd;
+	uint32_t fd;
 
 	// CPU family string.
 	const char *cpufamily;
@@ -61,7 +61,7 @@ typedef struct options_t {
 	char cpumodel[49];
 
 	// If set the mainloop is broken.
-	int stop;
+	uint32_t stop;
 } options_t;
 
 extern options_t options;
