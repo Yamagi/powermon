@@ -34,6 +34,7 @@
 #include <sys/errno.h>
 #include <sys/stat.h>
 
+#include "cpuid.h"
 #include "main.h"
 #include "msr.h"
 
@@ -72,10 +73,13 @@ void exit_error(int32_t code, const char *fmt, ...) {
 }
 
 
+// --------
+
+
 /*
  * Print usage and exit.
  */
-void usage(void) {
+static void usage(void) {
 	printf("Usage: raplctl [-d /dev/cpuctl0]\n\n");
 
 	printf("Options:\n");
@@ -88,13 +92,27 @@ void usage(void) {
 /*
  * Parses the command line options and sets defaults.
  */
-void parse_cmdoption(int argc, char *argv[]) {
+static void parse_cmdoption(int argc, char *argv[]) {
 	int32_t ch;
 
-	while ((ch = getopt(argc, argv, "d:h")) != -1) {
+	while ((ch = getopt(argc, argv, "d:f:ht:")) != -1) {
 		switch (ch) {
 			case 'd':
 				cmdopts.device = optarg;
+				break;
+
+			case 'f':
+				cmdopts.cpufamily = optarg;
+				break;
+
+			case 't':
+				if (!strcmp(optarg, "client")) {
+					cmdopts.cputype = CLIENT;
+				} else if (!strcmp(optarg, "server")) {
+					cmdopts.cputype = SERVER;
+				} else {
+					cmdopts.cputype = UNKNOWN;
+				}
 				break;
 
 			case '?':
@@ -114,6 +132,36 @@ void parse_cmdoption(int argc, char *argv[]) {
 			exit_error(1, "ERROR: Couldn't open %s: %s\n", 
 					cmdopts.device, strerror(errno));
 		}
+	}
+
+	if (!cmdopts.cpufamily) {
+		cmdopts.cpufamily = getcpufamily();
+	}
+
+	if (!cmdopts.cputype) {
+		cmdopts.cputype = getcputype();
+	}
+}
+
+
+/*
+ * Checks if the CPU is supported. If not an errir string is
+ * printed and the program is aborted.
+ */
+static void checkcpu(void) {
+	// CPU vendor must be Intel.
+	char vendor[13];
+
+	getcpuvendor(vendor);
+
+	if (strcmp(vendor, "GenuineIntel")) {
+		exit_error(1, "%s\n", "Only Intel CPUs are supported, sorry.");
+	}
+
+
+	// Is the CPU type supported?
+	if (cmdopts.cputype == UNKNOWN) {
+		exit_error(1, "%s\n", "CPU type is unknown, specify with -t.");
 	}
 }
 
@@ -139,6 +187,17 @@ int main(int argc, char *argv[]) {
 
 	// Parse options.
 	parse_cmdoption(argc, argv);
+
+
+	// Check if CPU is supported.
+	checkcpu();
+
+
+	/*
+	uint64_t blabb = read_msr(UNIT_MULTIPLIER);
+	unit_msr_t blubb = *(unit_msr_t *)&blabb;
+	printf("%lu\n", blubb.power);
+	*/
 
 
 	// Regular exit

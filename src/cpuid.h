@@ -24,31 +24,40 @@
  * SUCH DAMAGE.
  */ 
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <sys/cpuctl.h>
-#include <sys/errno.h>
-#include <sys/ioctl.h>
+#ifndef CPUID_H_
+#define CPUID_H_
+
+
+// --------
+
 
 #include "main.h"
-#include "msr.h"
 
 
 // --------
 
 
-uint64_t read_msr(int32_t msr) {
-	cpuctl_msr_args_t args;
+/*
+ * Gives the CPU vendor.
+ *
+ *  - vendor: Pointer to a char array with minimum length 13.
+ */
+void getcpuvendor(char *vendor);
 
-	args.msr = msr;
 
-	if (ioctl(cmdopts.fd, CPUCTL_RDMSR, &args) == -1)
-	{
-		exit_error(1, "ERROR: ioctl CPUCTL_RDMSR failed: %s\n", errno);
-	}
+/*
+ * Returns the CPU family.
+ */
+const char *getcpufamily(void);
 
-	return args.data;
-}
+
+/*
+ * Returns the CPU type.
+ */
+cputype_e getcputype(void);
+
 
 // --------
+
+#endif // CPUID_H_
 

@@ -31,10 +31,28 @@
 // --------
 
 
+// CPU types.
+typedef enum cputype_e {
+	CLIENT = 0,
+	SERVER,
+	UNKNOWN,
+	UNSUPPORTED
+} cputype_e;
+
+
 // Options given at command line.
 typedef struct cmdopts_t {
+	// cpuctl device to operate on.
 	const char *device;
+
+	// FD to cpuctl device.
 	int fd;
+
+	// CPU family string.
+	const char *cpufamily;
+
+	// CPU type.
+	cputype_e cputype;
 } cmdopts_t;
 
 extern cmdopts_t cmdopts;
