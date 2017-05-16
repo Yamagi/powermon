@@ -1,5 +1,5 @@
 Powermon
---------
+========
 Powermon is a small utility that reads the CPU internal power counters,
 calculates the the current power consumption and displays it together
 with some nice statistics through an interactive curses interface. At
@@ -10,7 +10,7 @@ it relys on FreeBSDs cpuctl(4) interface.
 
 
 Supported CPUs
-==============
+--------------
 All Intel CPUs starting with Sandy Bridge are supported. Older Intel
 CPUs don't expose the necessary performance counters and code for other
 vendors wasn't written until now.
@@ -22,7 +22,7 @@ therefor the necessary informations can be given at command line.
 
 
 How it works
-============
+------------
 All Intel CPUs since Sandy Bridge feature a co-processor for power
 management called Power Management Unit (PMU). The PMU has an accurate
 view over the current power consumption. Some data about the current
