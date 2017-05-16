@@ -36,8 +36,8 @@
 #include <sys/stat.h>
 
 #include "cpuid.h"
+#include "display.h"
 #include "main.h"
-#include "monitor.h"
 #include "msr.h"
 
 
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 
 
 	// Setup curses an start the main loop.
-	monitor();
+	display();
 
 
 	// Regular exit.

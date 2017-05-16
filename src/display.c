@@ -164,9 +164,9 @@ static void getwraparounds(multipliers_t *multi, wraparound_t *wrap) {
 
 
 /*
- * Prints a nice status monitor until the user interrupts us.
+ * Prints a nice status display until the user interrupts us.
  */
-void monitor(void) {
+void display(void) {
 	// Initialize curses.
 	initscr();
 	cbreak();

@@ -32,9 +32,9 @@
 
 
 /*
- * Prints a nice status monitor until the user interrupts us.
+ * Prints a nice status display until the user interrupts us.
  */
-void monitor(void);
+void display(void);
 
 
 // --------
