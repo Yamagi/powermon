@@ -149,11 +149,11 @@ static void parse_cmdoption(int argc, char *argv[]) {
 
 	if (!options.device) {
 		options.device = "/dev/cpuctl0";
+	}
 
-		if ((options.fd = open(options.device, O_RDWR)) == -1) {
-			exit_error(1, "ERROR: Couldn't open %s: %s\n", 
-					options.device, strerror(errno));
-		}
+	if ((options.fd = open(options.device, O_RDWR)) == -1) {
+		exit_error(1, "ERROR: Couldn't open %s: %s\n", 
+				options.device, strerror(errno));
 	}
 
 	if (!options.cpufamily) {
