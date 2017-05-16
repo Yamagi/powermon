@@ -65,7 +65,7 @@ build/%.o: %.c
 OBJS_ = \
 	src/cpuid.o \
 	src/main.o \
-	src/monitor.o \
+	src/display.o \
 	src/msr.o
 
 # -----------
