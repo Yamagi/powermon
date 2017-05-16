@@ -24,16 +24,22 @@ endif
 # -----------
 
 # Builds everything
-all :
+all:
 	@echo "Building powermon"
 	$(MAKE) powermon
 
 # -----------
 
 # Clean
-clean :
+clean:
 	@echo "===> CLEAN"
 	$(Q)rm -rf build/ release
+
+# -----------
+
+install: powermon
+	@echo "===> Installing powermon"
+	$(Q)install -s release/powermon /usr/local/sbin/powermon
 
 # -----------
 
