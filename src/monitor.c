@@ -88,18 +88,18 @@ typedef struct wraparound_t {
  */
 static void getenergy(multipliers_t *multi, energy_t *energy) {
 	// Package.
-	uint64_t msr = read_msr(PKG_STATUS);
+	uint64_t msr = getmsr(PKG_STATUS);
 	status_msr_t status = *(status_msr_t *)&msr;
 	energy->pkg = multi->energy * status.total_energy_consumed;
 
 	// PP0.
-	msr = read_msr(PP0_STATUS);
+	msr = getmsr(PP0_STATUS);
 	status = *(status_msr_t *)&msr;
 	energy->pp0 = multi->energy * status.total_energy_consumed;
      
 	// PP1.
 	if (options.cputype == CLIENT) {
-		msr = read_msr(PP1_STATUS);
+		msr = getmsr(PP1_STATUS);
 		status = *(status_msr_t *)&msr;
 		energy->pp1 = multi->energy * status.total_energy_consumed;
 
@@ -108,7 +108,7 @@ static void getenergy(multipliers_t *multi, energy_t *energy) {
 
 	//DRAM.
 	if (options.cputype == SERVER) {
-		msr = read_msr(DRAM_STATUS);
+		msr = getmsr(DRAM_STATUS);
 		status = *(status_msr_t *)&msr;
 		energy->dram = multi->energy * status.total_energy_consumed;
 
@@ -123,7 +123,7 @@ static void getenergy(multipliers_t *multi, energy_t *energy) {
  *  - *multipliers: Struct to fill.
  */
 static void getmultipliers(multipliers_t *multipliers) {
-	uint64_t msr = read_msr(UNIT_MULTIPLIER);
+	uint64_t msr = getmsr(UNIT_MULTIPLIER);
 	unit_msr_t units = *(unit_msr_t *)&msr;
 
 	multipliers->energy = 1.0 / (double)B2POW(units.energy);
@@ -138,7 +138,7 @@ static void getmultipliers(multipliers_t *multipliers) {
  *  - *limits: Struct to fill.
  */
 static void getpowerlimits(powerlimits_t *limits) {
-	uint64_t msr = read_msr(PKG_INFO);
+	uint64_t msr = getmsr(PKG_INFO);
 	info_msr_t values = *(info_msr_t *)&msr;
 
 	limits->maximum_power = values.maximum_power / 10;

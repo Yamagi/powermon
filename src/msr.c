@@ -42,7 +42,7 @@
  *
  *  - msr: MSR to read.
  */
-uint64_t read_msr(int32_t msr) {
+uint64_t getmsr(int32_t msr) {
 	cpuctl_msr_args_t args;
 
 	args.msr = msr;

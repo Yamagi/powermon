@@ -229,7 +229,7 @@ typedef struct unit_msr_t {
  *
  *  - msr: MSR to read.
  */
-uint64_t read_msr(int32_t msr);
+uint64_t getmsr(int32_t msr);
 
 
 // --------
