@@ -1,0 +1,67 @@
+.Dd $Mdocdate$
+.Dt POWERMON 8
+.Os
+.Sh NAME
+.Nm powermon
+.Nd display CPU power consumption
+.Sh SYNOPSIS
+.Nm powermon
+.Op Fl d Ar device
+.Op Fl f Ar family
+.Op Fl h
+.Op Fl m Ar model
+.Op Fl t Ar type
+.Op Fl v Ar vendor
+.Sh DESCRIPTION
+The
+.Nm
+utility reads the CPU internal power counters, calculates the current
+power consumption and displays it though a nice curses interface. What
+counters are available is dependent on the CPU.
+
+.Nm
+requires the cpuctl(4) interface to be availble. Access is granted
+through the read permissions on the /dev/cpuctl* device.
+
+All necessary parameters are determined at program start via CPUID and
+MSRs. If some parameters cannot be detemined or the CPU is unknown to
+.Nm
+they can be overridden with the following options:
+.Bl -tag -width Ds
+.It Fl d
+cpuctl(4) device to operate on. Default is /dev/cpuctl0. On most CPUs
+each core is represented by one device, all devices of the same package
+give the same readings.
+.It Fl f
+CPU family.
+.It Fl h
+Print a short help text and exit.
+.It Fl m
+CPU model, 48 characters maximum.
+.It Fl t
+CPU type, either CLIENT or SERVER.
+.It Fl v
+CPU vendor. Only CPUs with GenuineIntel as vendor string are supported.
+.El
+.Sh COMMANDS
+.Nm
+is controlled with interactive keyboard commands. The following commands
+are supported:
+.Bl -tag -width Ds
+.It Ic q
+Exit the application.
+.El
+.Sh SEE ALSO
+.Xr coretemp 4
+.Xr cpuctl 4
+.Sh AUTHORS
+.An Yamagi Burmeister
+.Mt yamagi@yamagi.org
+.Sh Bugs
+Currently only Intel CPUs starting with Sandy Bridge are supported.
+Older Intel CPUs don't have the necessary MSRs, for other vendors the
+code is missing.
+
+The accuracy of the DRAM counter is highly dependent on the OEM
+platform. The values may just be garbage.
+

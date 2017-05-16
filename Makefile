@@ -40,6 +40,9 @@ clean:
 install: powermon
 	@echo "===> Installing powermon"
 	$(Q)install -s release/powermon /usr/local/sbin/powermon
+	$(Q)cp misc/powermon.8 release
+	$(Q)gzip release/powermon.8
+	$(Q)install -m 644 release/powermon.8.gz /usr/local/man/man8/powermon.8.gz
 
 # -----------
 
