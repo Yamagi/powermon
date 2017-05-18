@@ -297,7 +297,7 @@ void display(void) {
 			mvprintw(9, 1, "Package:");
 			attroff(A_BOLD);
 			mvprintw(10, 9, "          ");
-			mvprintw(10, 1, "Current: %.2fJ", delta_energy.pkg);
+			mvprintw(10, 1, "Current: %.2fW", delta_energy.pkg);
 			mvprintw(11, 1, "Total: %.2fJ", total_energy.pkg);
 
 			// Uncore power consumption.
@@ -305,7 +305,7 @@ void display(void) {
 			mvprintw(9, 20, "Uncore:");
 			attroff(A_BOLD);
 			mvprintw(10, 29, "          ");
-			mvprintw(10, 20, "Current: %.2fJ", delta_energy.pkg - 
+			mvprintw(10, 20, "Current: %.2fW", delta_energy.pkg -
 					(delta_energy.pp0 + delta_energy.pp1));
 			mvprintw(11, 20, "Total: %.2fJ", total_energy.pkg -
 					(total_energy.pp0 + total_energy.pp1));
@@ -315,7 +315,7 @@ void display(void) {
 			mvprintw(9, 40, "x86 Cores:");
 			attroff(A_BOLD);
 			mvprintw(10, 49, "          ");
-			mvprintw(10, 40, "Current: %.2fJ", delta_energy.pp0);
+			mvprintw(10, 40, "Current: %.2fW", delta_energy.pp0);
 			mvprintw(11, 40, "Total: %.2fJ", total_energy.pp0);
 
 			if (options.cputype == CLIENT) {
@@ -324,7 +324,7 @@ void display(void) {
 				mvprintw(9, 60, "GPU:");
 				attroff(A_BOLD);
 				mvprintw(10, 69, "          ");
-				mvprintw(10, 60, "Current: %.2fJ", delta_energy.pp1);
+				mvprintw(10, 60, "Current: %.2fW", delta_energy.pp1);
 				mvprintw(11, 60, "Total: %.2fJ", total_energy.pp1);
 			} else if (options.cputype == SERVER) {
 				// DRAM power consumption.
@@ -332,7 +332,7 @@ void display(void) {
 				mvprintw(9, 60, "DRAM:");
 				attroff(A_BOLD);
 				mvprintw(10, 69, "          ");
-				mvprintw(10, 60, "Current: %.2fJ", delta_energy.dram);
+				mvprintw(10, 60, "Current: %.2fW", delta_energy.dram);
 				mvprintw(11, 60, "Total: %.2fJ", total_energy.dram);
 			}
 
