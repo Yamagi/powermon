@@ -167,6 +167,14 @@ static void getwraparounds(multipliers_t *multi, wraparound_t *wrap) {
  * Prints a nice status display until the user interrupts us.
  */
 void display(void) {
+	/* The standard terminal is 79 characters wide. We omit one
+	   character at each end, the usable space is 77 characters.
+	   We loose 2 characters to the bars end markers, and 8 to
+	   the current power consumtion display. So we can work with
+	   67 characters. At the left we're starting at character 10
+	   and at the right we end at character 76. */
+
+
 	// Initialize curses.
 	initscr();
 	cbreak();
@@ -174,6 +182,7 @@ void display(void) {
 	noecho();
 	nodelay(stdscr, TRUE);
 	curs_set(0);
+
 
 	// Initialize multipliers.
 	multipliers_t multipliers;
@@ -200,6 +209,60 @@ void display(void) {
 	uint32_t count = 0;
 
 	getenergy(&multipliers, &last_energy);
+
+
+	// Print static fields once
+
+	// Header.
+	char header[78];
+
+	snprintf(header, sizeof(header), "%s", options.cpumodel);
+	mvprintw(0, 38 - (strlen(header) / 2), header);
+
+	snprintf(header, sizeof(header), "(Arch: %s, Limit: %luW)",
+			options.cpufamily, powerlimit);
+	mvprintw(1, 38 - (strlen(header) / 2), header);
+
+	// Load bar
+	mvprintw(5, 7, "W [");
+	mvprintw(5, 77, "]");
+
+	// Package
+	attron(A_BOLD);
+	mvprintw(9, 1, "Package:");
+	attroff(A_BOLD);
+	mvprintw(10, 1, "Current: ");
+	mvprintw(11, 1, "Total: ");
+
+	// Uncore
+	attron(A_BOLD);
+	mvprintw(9, 20, "Uncore:");
+	attroff(A_BOLD);
+	mvprintw(10, 20, "Current: ");
+	mvprintw(11, 20, "Total: ");
+
+	// x86 cores
+	attron(A_BOLD);
+	mvprintw(9, 40, "x86 Cores:");
+	attroff(A_BOLD);
+	mvprintw(10, 40, "Current: ");
+	mvprintw(11, 40, "Total: ");
+
+	if (options.cputype == CLIENT) {
+		// GPU power consumption.
+		attron(A_BOLD);
+		mvprintw(9, 60, "GPU:");
+		attroff(A_BOLD);
+		mvprintw(10, 60, "Current: ");
+		mvprintw(11, 60, "Total: ");
+	} else if (options.cputype == SERVER) {
+		// DRAM power consumption.
+		attron(A_BOLD);
+		mvprintw(9, 60, "DRAM:");
+		attroff(A_BOLD);
+		mvprintw(10, 60, "Current: ");
+		mvprintw(11, 60, "Total: ");
+	}
 
 	while (1) {
 		getenergy(&multipliers, &cur_energy);
@@ -256,28 +319,10 @@ void display(void) {
 		count++;
 
 		if (count == 20) {
-			/* The standard terminal is 79 characters wide. We omit one
-			   character at each end, the usable space is 77 characters.
-			   We loose 2 characters to the bars end markers, and 8 to
-			   the current power consumtion display. So we can work with
-			   67 characters. At the left we're starting at character 10
-			   and at the right we end at character 76. */
-
-
-			// Header.
-			char header[78];
-
-			snprintf(header, sizeof(header), "%s", options.cpumodel);
-			mvprintw(0, 38 - (strlen(header) / 2), header);
-
-			snprintf(header, sizeof(header), "(Arch: %s, Limit: %luW)",
-					options.cpufamily, powerlimit);
-			mvprintw(1, 38 - (strlen(header) / 2), header);
-
 			// Total power consumption.
-			uint32_t num_load = floor((67.0 / powerlimit) * delta_energy.pkg);
-			mvprintw(5, 1, "%6.2fW [", delta_energy.pkg);
+			mvprintw(5, 1, "%6.2f", delta_energy.pkg);
 
+			uint32_t num_load = floor((67.0 / powerlimit) * delta_energy.pkg);
 			uint32_t i;
 
 			for (i = 0; i < num_load && i <= 66; i++) {
@@ -290,50 +335,33 @@ void display(void) {
 				mvprintw(5, i + 10, " ");
 			}
 
-			mvprintw(5, 77, "]");
-
 			// Package power consumption.
-			attron(A_BOLD);
-			mvprintw(9, 1, "Package:");
-			attroff(A_BOLD);
 			mvprintw(10, 9, "          ");
-			mvprintw(10, 1, "Current: %.2fW", delta_energy.pkg);
-			mvprintw(11, 1, "Total: %.2fJ", total_energy.pkg);
+			mvprintw(10, 10, "%.2fW", delta_energy.pkg);
+			mvprintw(11, 8, "%.2fJ", total_energy.pkg);
 
 			// Uncore power consumption.
-			attron(A_BOLD);
-			mvprintw(9, 20, "Uncore:");
-			attroff(A_BOLD);
 			mvprintw(10, 29, "          ");
-			mvprintw(10, 20, "Current: %.2fW", delta_energy.pkg -
+			mvprintw(10, 29, "%.2fW", delta_energy.pkg -
 					(delta_energy.pp0 + delta_energy.pp1));
-			mvprintw(11, 20, "Total: %.2fJ", total_energy.pkg -
+			mvprintw(11, 27, "%.2fJ", total_energy.pkg -
 					(total_energy.pp0 + total_energy.pp1));
 
 			// x86 cores power consumption.
-			attron(A_BOLD);
-			mvprintw(9, 40, "x86 Cores:");
-			attroff(A_BOLD);
 			mvprintw(10, 49, "          ");
-			mvprintw(10, 40, "Current: %.2fW", delta_energy.pp0);
-			mvprintw(11, 40, "Total: %.2fJ", total_energy.pp0);
+			mvprintw(10, 49, "%.2fW", delta_energy.pp0);
+			mvprintw(11, 47, "%.2fJ", total_energy.pp0);
 
 			if (options.cputype == CLIENT) {
 				// GPU power consumption.
-				attron(A_BOLD);
-				mvprintw(9, 60, "GPU:");
-				attroff(A_BOLD);
 				mvprintw(10, 69, "          ");
-				mvprintw(10, 60, "Current: %.2fW", delta_energy.pp1);
-				mvprintw(11, 60, "Total: %.2fJ", total_energy.pp1);
+				mvprintw(10, 69, "%.2fW", delta_energy.pp1);
+				mvprintw(11, 67, "%.2fJ", total_energy.pp1);
 			} else if (options.cputype == SERVER) {
 				// DRAM power consumption.
-				attron(A_BOLD);
-				mvprintw(9, 60, "DRAM:");
-				attroff(A_BOLD);
 				mvprintw(10, 69, "          ");
-				mvprintw(10, 60, "Current: %.2fW", delta_energy.dram);
-				mvprintw(11, 60, "Total: %.2fJ", total_energy.dram);
+				mvprintw(10, 69, "%.2fW", delta_energy.dram);
+				mvprintw(11, 67, "%.2fJ", total_energy.dram);
 			}
 
 			// Print the new data
