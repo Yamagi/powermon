@@ -16,12 +16,12 @@
 The
 .Nm
 utility reads the CPU internal power counters, calculates the current
-power consumption and displays it though a nice curses interface. What
-counters are available is dependent on the CPU.
+power consumption and displays it on a nice curses interface. What
+counters are available depends on the CPU.
 
 .Nm
 requires the cpuctl(4) interface to be availble. Access is granted
-through the read permissions on the /dev/cpuctl* device.
+through the read permissions on the /dev/cpuctl* devices.
 
 All necessary parameters are determined at program start via CPUID and
 MSRs. If some parameters cannot be detemined or the CPU is unknown to
