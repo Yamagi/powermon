@@ -4,7 +4,7 @@ Powermon
 Powermon is a small utility that reads the CPU internal power counters,
 calculates the current power consumption and displays it together with
 some nice statistics on an interactive curses interface. At this time
-Powermon is exculsive for the FreeBSD operating system, it's based upon
+Powermon is exclusive for the FreeBSD operating system, it's based upon
 FreeBSDs cpuctl(4) interface.
 
 ![Screenshot](misc/screenshot.png "Screenshot")
@@ -13,8 +13,9 @@ FreeBSDs cpuctl(4) interface.
 Supported CPUs
 --------------
 All Intel CPUs starting with Sandy Bridge are supported. Older Intel
-CPUs don't expose the necessary performance counters and code for other
-vendors wasn't written until now.
+CPUs and CPUs from other vendors don't expose the necessary performance
+counters. Additionall some server CPUs like those based on Haswell and
+Broadwell do not provide the necessary data.
 
 Powermon needs to know some informations about the CPU. Some of these
 informations are determined from the CPUID and several MSRs, others are
@@ -38,5 +39,5 @@ Powermon.
 
 More informations can be found here: [Intel® Power
 Governor](https://software.intel.com/en-us/articles/intel-power-governor
-"Intel Power Govenor)
+"Intel Power Govenor")
 
