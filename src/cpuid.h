@@ -41,16 +41,18 @@
  * Gives the CPU model.
  *
  *  - model: Pointer to a char array with minimum length 49.
+ *  - model_len: Length of char array passed in 'model'.
  */
-void getcpumodel(char *model);
+void getcpumodel(char *model, size_t model_len);
 
 
 /*
  * Gives the CPU vendor.
  *
  *  - vendor: Pointer to a char array with minimum length 13.
+ *  - vendor_len: Length of string passed in 'vendor'.
  */
-void getcpuvendor(char *vendor);
+void getcpuvendor(char *vendor, size_t vendor_len);
 
 
 /*

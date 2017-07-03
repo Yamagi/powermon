@@ -165,17 +165,17 @@ static void parse_cmdoption(int argc, char *argv[]) {
 	}
 
 	if (!strlen(options.cpuvendor)) {
-		getcpuvendor(options.cpuvendor);
+		getcpuvendor(options.cpuvendor, sizeof(options.cpuvendor));
 	}
 
 	if (!strlen(options.cpumodel)) {
-		getcpumodel(options.cpumodel);
+		getcpumodel(options.cpumodel, sizeof(options.cpumodel));
 	}
 }
 
 
 /*
- * Checks if the CPU is supported. If not an errir string is
+ * Checks if the CPU is supported. If not an error string is
  * printed and the program is aborted.
  */
 static void checkcpu(void) {

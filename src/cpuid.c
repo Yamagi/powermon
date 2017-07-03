@@ -24,6 +24,7 @@
  * SUCH DAMAGE.
  */ 
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -42,9 +43,12 @@
  * Gives the CPU model.
  *
  *  - model: Pointer to a char array with minimum length 49.
+ *  - model_len: Length of char array passed in 'model'.
  */
-void getcpumodel(char *model) {
+void getcpumodel(char *model, size_t model_len) {
 	cpuctl_cpuid_count_args_t cpuid;
+
+	assert(model_len >= 49);
 
 
 	/* The CPU model is an up to 48 byte long null-terminated string,
@@ -109,7 +113,7 @@ void getcpumodel(char *model) {
 	memcpy(model + 44, cpuid.data + 3, sizeof(uint32_t));
 
 	// Remove superfluous whitespaces. For example a Core i7-2620M
-	// returns a string surrounded by a lot if whitespaces.
+	// returns a string surrounded by a lot of whitespaces.
 	uint32_t count = 0;
 	char *tmp = model;
 
@@ -141,9 +145,12 @@ void getcpumodel(char *model) {
  * Gives the CPU vendor.
  *
  *  - vendor: Pointer to a char array with minimum length 13.
+ *  - vendor_len: Length of string passed in 'vendor'.
  */
-void getcpuvendor(char *vendor) {
+void getcpuvendor(char *vendor, size_t vendor_len) {
 	cpuctl_cpuid_count_args_t cpuid;
+
+	assert(vendor_len >= 13);
 
 
 	/* The CPU vendor is the first CPUID field. :) The string is
