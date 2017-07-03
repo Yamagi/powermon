@@ -318,6 +318,7 @@ cputype_e getcputype(void) {
 			return UNSUPPORTED;
 
 		// Nehalem / Westmere.
+		case 0x106a0:
 		case 0x106e0:
 		case 0x106f0:
 		case 0x20650:
