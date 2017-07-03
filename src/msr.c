@@ -49,7 +49,7 @@ uint64_t getmsr(int32_t msr) {
 
 	if (ioctl(options.fd, CPUCTL_RDMSR, &args) == -1)
 	{
-		exit_error(1, "ERROR: ioctl CPUCTL_RDMSR failed: %s\n", errno);
+		exit_error(1, "ERROR: ioctl CPUCTL_RDMSR failed: %i\n", errno);
 	}
 
 	return args.data;
