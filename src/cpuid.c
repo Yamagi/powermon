@@ -257,7 +257,7 @@ cputype_e getcputype(void) {
 	}
 
 	// CPU identifiers are taken from  Intel® 64 and IA-32
-    // Architectures Software Developer Manual: Vol 3, Table 35-1.
+    // Architectures Software Developer Manual: Vol 4, Table 2-1.
 	switch (cpuid.data[0] & 0xfffffff0) {
 		// Pentium.
 		case 0x00510:
@@ -350,8 +350,9 @@ cputype_e getcputype(void) {
 			return CLIENT;
 
 		// Haswell server.
+		// PP0 is always 0.
 		case 0x306f0:
-			return SERVER;
+			return UNSUPPORTED;
 
 		// Broadwell client.
 		case 0x306d0:
@@ -359,9 +360,10 @@ cputype_e getcputype(void) {
 			return CLIENT;
 
 		// Broadwell server.
+		// PP0 is always 0.
 		case 0x406f0:
 		case 0x50660:
-			return SERVER;
+			return UNSUPPORTED;
 
 		// Skylake client.
 		case 0x406e0:
