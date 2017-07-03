@@ -14,7 +14,7 @@ Supported CPUs
 --------------
 All Intel CPUs starting with Sandy Bridge are supported. Older Intel
 CPUs and CPUs from other vendors don't expose the necessary performance
-counters. Additionall some server CPUs like those based on Haswell and
+counters. Additionally some server CPUs like those based on Haswell and
 Broadwell do not provide the necessary data.
 
 Powermon needs to know some informations about the CPU. Some of these
