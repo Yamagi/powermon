@@ -162,6 +162,15 @@ static void parse_cmdoption(int argc, char *argv[]) {
 
 	if (!options.cputype) {
 		options.cputype = getcputype();
+
+		// Try to determine based on MSRs.
+		if (options.cputype == UNKNOWN) {
+			if (checkmsr(PP1_STATUS)){
+				options.cputype = CLIENT;
+			} else if (checkmsr(DRAM_STATUS)) {
+				options.cputype = SERVER;
+			}
+		}
 	}
 
 	if (!strlen(options.cpuvendor)) {

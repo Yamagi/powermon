@@ -24,6 +24,7 @@
  * SUCH DAMAGE.
  */ 
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/cpuctl.h>
@@ -35,6 +36,25 @@
 
 
 // --------
+
+
+/*
+ * Checks if the given MSR exists.
+ *
+ * - msr: MSR to check.
+ */
+bool checkmsr(int32_t msr) {
+	cpuctl_msr_args_t args;
+
+	args.msr = msr;
+
+	if (ioctl(options.fd, CPUCTL_RDMSR, &args) == -1)
+	{
+		return false;
+	}
+
+	return true;
+}
 
 
 /*

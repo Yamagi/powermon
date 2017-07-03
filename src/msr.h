@@ -67,6 +67,7 @@
  */
 
 
+#include <stdbool.h>
 #include <stdint.h>
 
 
@@ -109,7 +110,7 @@
 // 31 (high).
 #define PP0_POLICY 0x63a
 
-// Time the x86 were throttled to enforce the power limit.
+// Time the x86 cores were throttled to enforce the power limit.
 #define PP0_TIME   0x63b
 
 
@@ -223,6 +224,13 @@ typedef struct unit_msr_t {
 
 // Replacement for pow() with a base of 2.
 #define B2POW(e) (((e) == 0) ? 1 : (2 << ((e) - 1)))
+
+/*
+ * Checks if the given MSR exists.
+ *
+ * - msr: MSR to be checked.
+ */
+bool checkmsr(int32_t msr);
 
 /*
  * Reads the given MSR and returns it's data.
